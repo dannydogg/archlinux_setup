@@ -1,0 +1,223 @@
+#!/bin/bash
+# Arch Linux Installation Script
+ 
+# OPTIONAL
+# Set keyboard layout to German Latin with umlauts
+loadkeys de-latin1
+ 
+### NETWORK ###
+ 
+# OPTIONAL
+# Search for network devices (handled by kernel)
+# Ethernet
+#lspci -k | grep Ethernet
+# Wireless
+#lspci -k | grep Wireless
+ 
+## TBD network connectivity check
+ 
+# Enable network time protocol
+timedatectl set-ntp true
+ 
+# Check network time protocol status
+#timedatectl status
+ 
+### DISK & PARTITION MANAGEMENT ###
+ 
+# Clear / Create GPT partition table
+sfdisk --delete /dev/sda
+echo 'label: gpt' | sfdisk /dev/sda
+ 
+# Create partitions from script (non-interactice)
+# Source: https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/
+# Source: https://www.thegeekstuff.com/2017/05/sfdisk-examples/
+# Source: https://linuxhint.com/sfdisk-tutorials/
+sfdisk /dev/sda <<EOF
+ , 512M, U
+ , 2G,   S
+ , , L
+write;
+EOF
+ 
+# Create FAT32 ESP filesystem on /dev/sda1
+# Source: https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
+mkfs.fat -F 32 /dev/sda1
+ 
+# Create swap filesystem
+mkswap /dev/sda2
+ 
+# Create Linux EXT4 filesystem
+mkfs.ext4 /dev/sda3
+ 
+# Mount EXT4 filesystem under archiso (/mnt)
+mount /dev/sda3 /mnt
+ 
+# Create boot directory under mounted EXT4 partition (/mnt/boot)
+mkdir /mnt/boot
+ 
+# Mount ESP under under mounted EXT4 partition (/mnt/boot)
+mount /dev/sda1 /mnt/boot
+ 
+### PACKAGE INSTALLATION ###
+ 
+# Generate Arch Linux repository mirror list (/etc/pacman.d/mirrorlist)
+reflector --country DE --fastest 5 --ipv4 --protocol https --save /etc/pacman.d/mirrorlist
+ 
+# Install bare minimum packages (base, kernel, editors) on mounted EXT4 partition
+# For the bootloader, chose between grub (legacy, EFI) or refind (EFI only)
+# Other alternative bootloader possible
+# base              = Minimal package set to define a basic Arch Linux installation
+# base-devel        = 
+# linux             = The Linux kernel and modules
+# linux-headers     = Headers and scripts for building modules for the Linux kernel
+# linux-firmware    = Firmware files for Linux
+# sudo              = Give certain users the ability to run some commands as root
+# vi                = The original ex/vi text editor
+# vim               = Vi Improved, a highly configurable, improved version of the vi text editor
+# nano              = Pico editor clone with enhancements
+# micro             = Modern and intuitive terminal-based text editor
+# git               = the fast distributed version control system
+# go                = Core compiler tools for the Go programming language
+# refind            = An EFI boot manager
+# grub              = GNU GRand Unified Bootloader
+# networkmanager    = Network connection manager and user applications
+# bash-completion   = Programmable completion for the bash shell
+# openssh           = Premier connectivity tool for remote login with the SSH protocol
+# blueberry         = Bluetooth configuration tool
+# bluez             = Daemons for the bluetooth protocol stack
+# bluez-plugins     = bluez plugins (PS3 Sixaxis controller)
+# bluez-tools       = A set of tools to manage Bluetooth devices for Linux
+ 
+pacstrap /mnt base base-devel linux linux-headers linux-firmware sudo vi vim nano micro git go refind grub networkmanager bash-completion openssh blueberry bluez bluez-plugins bluez-tools
+ 
+# Generate filesystem table of /mnt on mounted EXT4 partition (/etc/fstab)
+# Prefered source identifiers: UUID
+genfstab -t UUID /mnt >> /mnt/etc/fstab
+ 
+# Change the apparent root directory for the current running process and their children to mounted EXT4 partition (/mnt)
+# Source https://wiki.archlinux.org/title/Chroot
+arch-chroot /mnt
+ 
+# Variables in chroot
+REGION="Europe"
+CITY="Berlin"
+LOCALISATION="de_DE.UTF-8 UTF-8"
+HOSTNAME_CUSTOM="ARCHLINUXVM"
+NEW_USER_NAME="archuser"
+ARCH_ISO_LABEL=$(blkid /dev/sr0 | awk --field-separator '"' '{print $6}')
+UUID=$(blkid /dev/sda3 | awk --field-separator '"' '{print $2}')
+ 
+### CONFIGURATION ###
+ 
+# Set region and time zone
+# Set a symbolic link (/etc/localtime points on /usr/share/zoneinfo/Region/City)
+ln --symbolic --force /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
+ 
+# Set the time clocks utility
+# Apply RTC time from system time (--systohc, -w)
+# Source: hwclock --help
+hwclock --systohc
+ 
+# Modify localistation templates file
+# Set the locale and charset
+# In this case:
+echo $LOCALISATION >> /etc/locale.gen
+ 
+# Generate localisation files from templates
+locale-gen
+ 
+# Set sysetm-wide language and region parameters
+# Source: https://wiki.archlinux.de/title/Locale.conf#Die_LC_ALL_Variable
+touch /etc/locale.conf
+echo "LANG=de_DE.UTF-8" >> /etc/locale.conf
+echo "LANGUAGE=de_DE" >> /etc/locale.conf
+echo "#LC_COLLATE=C" >> /etc/locale.conf
+echo "LC_TIME=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_MONETARY=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_NUMERIC=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_CTYPE=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_MESSAGES=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_PAPER=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_MEASUREMENT=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_NAME=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_ADDRESS=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_TELEPHONE=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /etc/locale.conf
+echo "LC_ALL=" >> /etc/locale.conf
+ 
+# Modify the configuration file for the virtual console
+touch /etc/vconsole.conf
+echo "KEYMAP=de-latin1" >> /etc/vconsole.conf
+echo "KEYMAP_TOGGLE=" >> /etc/vconsole.conf
+echo "FONT=eurlatgr" >> /etc/vconsole.conf
+echo "FONT_MAP=" >> /etc/vconsole.conf
+echo "FONT_UNIMAP=" >> /etc/vconsole.conf
+echo "#vconsole.keymap=" >> /etc/vconsole.conf
+echo "#vconsole.keymap_toggle=" >> /etc/vconsole.conf
+echo "#vconsole.font=" >> /etc/vconsole.conf
+echo "#vconsole.font_map=" >> /etc/vconsole.conf
+echo "#vconsole.font_unimap=" >> /etc/vconsole.conf
+ 
+# Set a userdefined hostname
+# Or use the hostname of the archlinux live iso ($HOSTNAME => archiso)
+touch /etc/hostname
+#echo $HOSTNAME >> /etc/hostname
+echo $HOSTNAME_CUSTOM >> /etc/hostname
+ 
+# Modify the hosts file for resolving local domain names
+echo "# IPv4" >> /etc/hosts
+echo "127.0.0.1 localhost" >> /etc/hosts
+echo "# IPv6" >> /etc/hosts
+echo "::1 localhost" >> /etc/hosts
+echo "# Local Domain" >> /etc/hosts
+echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /etc/hosts
+ 
+### USER MANAGEMENT ###
+ 
+# Set a default password for the root user
+passwd
+ 
+# Add a new user
+useradd --create-home $NEW_USER_NAME
+ 
+# Set a default password for the new user
+passwd $NEW_USER_NAME
+ 
+# Give superuser previliges to the new user
+usermod -aG wheel $NEW_USER_NAME
+ 
+# Change the visudo configuration (sed, Stream EDitor)
+sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /etc/sudoers --in-place
+ 
+### BOOTLOADER ###
+ 
+# GRUB
+#grub-install /dev/sda
+#grub-mkconfig --output=/boot/grub/grub.cfg
+ 
+# REFIND
+refind-install
+ 
+# Change the generated refind-linux config
+sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /boot/refind-linux.conf --in-place
+ 
+### SERVICES ###
+systemctl enable NetworkManager.service
+ 
+# Synchronize
+sync
+ 
+# Swap off
+swapoff /dev/sda2
+ 
+# Unmount ESP
+umount /dev/sda1
+ 
+# Unmount EXT4 Linux filesystem
+umount /dev/sda3
+ 
+# Exit arch-chroot
+exit
+ 
+# Reboot
+reboot
