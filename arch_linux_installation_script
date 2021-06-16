@@ -100,10 +100,10 @@ genfstab -t UUID /mnt >> /mnt/etc/fstab
 arch-chroot /mnt
 
 # Enable network time protocol (for the installed system)
-timedatectl set-ntp true
+arch-chroot /mnt timedatectl set-ntp true
 
 # Enable local real time clock (for the installed system)
-timedatectl set-local-rtc 1
+arch-chroot /mnt timedatectl set-local-rtc 1
 
 # Variables in chroot
 REGION="Europe"
@@ -118,83 +118,83 @@ UUID=$(blkid /dev/sda3 | awk --field-separator '"' '{print $2}')
  
 # Set region and time zone
 # Set a symbolic link (/etc/localtime points on /usr/share/zoneinfo/Region/City)
-ln --symbolic --force /usr/share/zoneinfo/$REGION/$CITY /etc/localtime
+ln --symbolic --force /mnt/usr/share/zoneinfo/$REGION/$CITY /mnt/etc/localtime
  
 # Set the time clocks utility
 # Apply RTC time from system time (--systohc, -w)
 # Source: hwclock --help
-hwclock --systohc
+arch-chroot /mnt hwclock --systohc
  
 # Modify localistation templates file
 # Set the locale and charset
 # In this case:
-echo $LOCALISATION >> /etc/locale.gen
+echo $LOCALISATION >> /mnt/etc/locale.gen
  
 # Generate localisation files from templates
-locale-gen
+arch-chroot /mnt locale-gen
  
 # Set sysetm-wide language and region parameters
 # Source: https://wiki.archlinux.de/title/Locale.conf#Die_LC_ALL_Variable
-touch /etc/locale.conf
-echo "LANG=de_DE.UTF-8" >> /etc/locale.conf
-echo "LANGUAGE=de_DE" >> /etc/locale.conf
-echo "#LC_COLLATE=C" >> /etc/locale.conf
-echo "LC_TIME=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_MONETARY=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_NUMERIC=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_CTYPE=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_MESSAGES=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_PAPER=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_MEASUREMENT=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_NAME=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_ADDRESS=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_TELEPHONE=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /etc/locale.conf
-echo "LC_ALL=" >> /etc/locale.conf
+touch /mnt/etc/locale.conf
+echo "LANG=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LANGUAGE=de_DE" >> /mnt/etc/locale.conf
+echo "#LC_COLLATE=C" >> /mnt/etc/locale.conf
+echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_CTYPE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_MESSAGES=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_PAPER=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_NAME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_ADDRESS=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_TELEPHONE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_ALL=" >> /mnt/etc/locale.conf
  
 # Modify the configuration file for the virtual console
-touch /etc/vconsole.conf
-echo "KEYMAP=de-latin1" >> /etc/vconsole.conf
-echo "KEYMAP_TOGGLE=" >> /etc/vconsole.conf
-echo "FONT=eurlatgr" >> /etc/vconsole.conf
-echo "FONT_MAP=" >> /etc/vconsole.conf
-echo "FONT_UNIMAP=" >> /etc/vconsole.conf
-echo "#vconsole.keymap=" >> /etc/vconsole.conf
-echo "#vconsole.keymap_toggle=" >> /etc/vconsole.conf
-echo "#vconsole.font=" >> /etc/vconsole.conf
-echo "#vconsole.font_map=" >> /etc/vconsole.conf
-echo "#vconsole.font_unimap=" >> /etc/vconsole.conf
+touch /mnt/etc/vconsole.conf
+echo "KEYMAP=de-latin1" >> /mnt/etc/vconsole.conf
+echo "KEYMAP_TOGGLE=" >> /mnt/etc/vconsole.conf
+echo "FONT=eurlatgr" >> /mnt/etc/vconsole.conf
+echo "FONT_MAP=" >> /mnt/etc/vconsole.conf
+echo "FONT_UNIMAP=" >> /mnt/etc/vconsole.conf
+echo "#vconsole.keymap=" >> /mnt/etc/vconsole.conf
+echo "#vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
+echo "#vconsole.font=" >> /mnt/etc/vconsole.conf
+echo "#vconsole.font_map=" >> /mnt/etc/vconsole.conf
+echo "#vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
  
 # Set a userdefined hostname
 # Or use the hostname of the archlinux live iso ($HOSTNAME => archiso)
-touch /etc/hostname
+touch /mnt/etc/hostname
 #echo $HOSTNAME >> /etc/hostname
-echo $HOSTNAME_CUSTOM >> /etc/hostname
+echo $HOSTNAME_CUSTOM >> /mnt/etc/hostname
  
 # Modify the hosts file for resolving local domain names
-echo "# IPv4" >> /etc/hosts
-echo "127.0.0.1 localhost" >> /etc/hosts
-echo "# IPv6" >> /etc/hosts
-echo "::1 localhost" >> /etc/hosts
-echo "# Local Domain" >> /etc/hosts
-echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /etc/hosts
+echo "# IPv4" >> /mnt/etc/hosts
+echo "127.0.0.1 localhost" >> /mnt/etc/hosts
+echo "# IPv6" >> /mnt/etc/hosts
+echo "::1 localhost" >> /mnt/etc/hosts
+echo "# Local Domain" >> /mnt/etc/hosts
+echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /mnt/etc/hosts
  
 ### USER MANAGEMENT ###
  
 # Set a default password for the root user
-passwd
+arch-chroot /mnt passwd
  
 # Add a new user
-useradd --create-home $NEW_USER_NAME
+arch-chroot /mnt useradd --create-home $NEW_USER_NAME
  
 # Set a default password for the new user
-passwd $NEW_USER_NAME
+arch-chroot /mnt passwd $NEW_USER_NAME
  
 # Give superuser previliges to the new user
-usermod -aG wheel $NEW_USER_NAME
+arch-chroot /mnt usermod -aG wheel $NEW_USER_NAME
  
 # Change the visudo configuration (sed, Stream EDitor)
-sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /etc/sudoers --in-place
+sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /mnt/etc/sudoers --in-place
  
 ### BOOTLOADER ###
  
@@ -203,13 +203,13 @@ sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /etc/sudoers --in-place
 #grub-mkconfig --output=/boot/grub/grub.cfg
  
 # REFIND
-refind-install
+arch-chroot /mnt refind-install
  
 # Change the generated refind-linux config
-sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /boot/refind-linux.conf --in-place
+sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /mnt/boot/refind-linux.conf --in-place
  
 ### SERVICES ###
-systemctl enable NetworkManager.service
+arch-chroot /mnt systemctl enable NetworkManager.service
  
 # Synchronize
 sync
@@ -224,7 +224,10 @@ umount /dev/sda1
 umount /dev/sda3
  
 # Exit arch-chroot
-exit
- 
+# exit
+
+# notify for finish
+echo "You can reboot now"
+
 # Reboot
-reboot
+#reboot
