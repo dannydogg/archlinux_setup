@@ -16,7 +16,7 @@ loadkeys de-latin1
  
 ## TBD network connectivity check
  
-# Enable network time protocol
+# Enable network time protocol (for the installation timestamps)
 timedatectl set-ntp true
  
 # Check network time protocol status
@@ -87,8 +87,9 @@ reflector --country DE --fastest 5 --ipv4 --protocol https --save /etc/pacman.d/
 # bluez             = Daemons for the bluetooth protocol stack
 # bluez-plugins     = bluez plugins (PS3 Sixaxis controller)
 # bluez-tools       = A set of tools to manage Bluetooth devices for Linux
+# reflector         = A Python 3 module and script to retrieve and filter the latest Pacman mirror list
  
-pacstrap /mnt base base-devel linux linux-headers linux-firmware sudo vi vim nano micro git go refind grub networkmanager bash-completion openssh blueberry bluez bluez-plugins bluez-tools
+pacstrap /mnt base base-devel linux linux-headers linux-firmware sudo vi vim nano micro git go refind grub networkmanager bash-completion openssh blueberry bluez bluez-plugins bluez-tools reflector
  
 # Generate filesystem table of /mnt on mounted EXT4 partition (/etc/fstab)
 # Prefered source identifiers: UUID
@@ -97,7 +98,13 @@ genfstab -t UUID /mnt >> /mnt/etc/fstab
 # Change the apparent root directory for the current running process and their children to mounted EXT4 partition (/mnt)
 # Source https://wiki.archlinux.org/title/Chroot
 arch-chroot /mnt
- 
+
+# Enable network time protocol (for the installed system)
+timedatectl set-ntp true
+
+# Enable local real time clock (for the installed system)
+timedatectl set-local-rtc 1
+
 # Variables in chroot
 REGION="Europe"
 CITY="Berlin"
