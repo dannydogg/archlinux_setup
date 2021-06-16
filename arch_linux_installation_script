@@ -97,7 +97,7 @@ genfstab -t UUID /mnt >> /mnt/etc/fstab
  
 # Change the apparent root directory for the current running process and their children to mounted EXT4 partition (/mnt)
 # Source https://wiki.archlinux.org/title/Chroot
-arch-chroot /mnt
+#arch-chroot /mnt
 
 # Enable network time protocol (for the installed system)
 arch-chroot /mnt timedatectl set-ntp true
