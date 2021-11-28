@@ -183,9 +183,16 @@ echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /mnt/etc/hos
  
 # Set a default password for the root user
 arch-chroot /mnt passwd
+
+# Create some default home folder in useradd skeleton
+arch-chroot /mnt mkdir /etc/skel/Desktop
+arch-chroot /mnt mkdir /etc/skel/Downloads
+arch-chroot /mnt mkdir /etc/skel/Music
+arch-chroot /mnt mkdir /etc/skel/Pictures
+arch-chroot /mnt mkdir /etc/skel/Videos
  
 # Add a new user
-arch-chroot /mnt useradd --create-home $NEW_USER_NAME
+arch-chroot /mnt useradd --create-home --skel /etc/skel $NEW_USER_NAME
  
 # Set a default password for the new user
 arch-chroot /mnt passwd $NEW_USER_NAME
