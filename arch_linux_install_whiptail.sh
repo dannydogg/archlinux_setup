@@ -7,9 +7,6 @@
 # arch_linux_install_whiptail.sh
 echo "DEBUG - arch_linux_install_whiptail.sh"
 #sleep 1
-# Created by: Daniel Mamedov
-echo "DEBUG - Created by: Daniel Mamedov"
-#sleep 1
 # Current shell
 echo "DEBUG - Current shell = $SHELL"
 
