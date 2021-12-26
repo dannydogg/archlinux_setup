@@ -81,3 +81,5 @@ kbd_layout=$(whiptail --title "$whiptail_title - Set keyboard layout" --radiolis
 
 echo DEBUG - Keyboard layout = $kbd_layout
 loadkeys $kbd_layout
+
+echo Test
