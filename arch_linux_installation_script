@@ -172,12 +172,12 @@ touch /mnt/etc/hostname
 echo $HOSTNAME_CUSTOM >> /mnt/etc/hostname
  
 # Modify the hosts file for resolving local domain names
-echo "# IPv4" >> /mnt/etc/hosts
-echo "127.0.0.1 localhost" >> /mnt/etc/hosts
-echo "# IPv6" >> /mnt/etc/hosts
-echo "::1 localhost" >> /mnt/etc/hosts
-echo "# Local Domain" >> /mnt/etc/hosts
-echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /mnt/etc/hosts
+#echo "# IPv4" >> /mnt/etc/hosts
+#echo "127.0.0.1 localhost" >> /mnt/etc/hosts
+#echo "# IPv6" >> /mnt/etc/hosts
+#echo "::1 localhost" >> /mnt/etc/hosts
+#echo "# Local Domain" >> /mnt/etc/hosts
+#echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /mnt/etc/hosts
  
 ### USER MANAGEMENT ###
  
