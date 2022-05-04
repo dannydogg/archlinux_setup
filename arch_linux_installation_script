@@ -31,7 +31,9 @@ sleep 1
 echo "DEBUG: Network connectivity check (tbd)"
 sleep 1
 # ...
-echo "DEGUG: ..."
+echo "DEBUG: Ping google.com"
+sleep 1
+ping google.com -c 3
 sleep 1
 echo "DEBUG: Assuming your network connection is established"
 sleep 1
@@ -127,6 +129,11 @@ echo "DEBUG: Create Linux EXT4 filesystem on third partition"
 sleep 1
 mkfs.ext4 /dev/"$DRIVE"3 -L ARCHLINUX -v
 sleep 1
+
+# Swap-on swap partition
+echo "DEBUG: Swap-on swap partition"
+sleep 1
+swapon /dev/"$DRIVE"2 --verbose
 
 # Mount EXT4 filesystem under directory mnt
 echo "DEBUG: Mount EXT4 filesystem under directory mnt"
@@ -248,7 +255,7 @@ ARCH_ISO_LABEL=$(blkid /dev/sr0 | awk --field-separator '"' '{print $6}')
 echo "DEBUG: ARCH_ISO_LABEL = $ARCH_ISO_LABEL"
 sleep 1
 
-UUID=$(blkid /dev/sda3 | awk --field-separator '"' '{print $2}')
+UUID=$(blkid /dev/"$DRIVE"3 | awk --field-separator '"' '{print $2}')
 echo "DEBUG: UUID = $UUID"
 sleep 2
 
@@ -413,10 +420,10 @@ sleep 3
 # Fix the generated rEFInd config
 echo "DEBUG: Fix the generated rEFInd config"
 sleep 1
-sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /mnt/boot/refind-linux.conf --in-place
+sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /mnt/boot/refind_linux.conf --in-place
 echo "DEBUG: Check rEFInd configuration"
 sleep 1
-cat /mnt/boot/refind-linux.conf
+cat /mnt/boot/refind_linux.conf
 sleep 3
 
 ####################################################################################################
