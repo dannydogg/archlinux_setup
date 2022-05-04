@@ -1,240 +1,437 @@
 #!/bin/bash
 # Arch Linux Installation Script
- 
+
+# Welcome to the Arch Linux Installation Script
+echo "Welcome to the Arch Linux Installation Script!"
+sleep 1
+
+####################################################################################################
+
 # OPTIONAL
 # Set keyboard layout to German Latin with umlauts
+echo "DEBUG: Set keyboard layout to German Latin with umlauts"
+sleep 1
 loadkeys de-latin1
- 
+sleep 1
+
+####################################################################################################
+
 ### NETWORK ###
- 
+echo "DEBUG: NETWORK"
+sleep 1
+
 # OPTIONAL
 # Search for network devices (handled by kernel)
 # Ethernet
 #lspci -k | grep Ethernet
 # Wireless
 #lspci -k | grep Wireless
- 
-## TBD network connectivity check
- 
-# Enable network time protocol (for the installation timestamps)
+
+## Network connectivity check (tbd)
+echo "DEBUG: Network connectivity check (tbd)"
+sleep 1
+# ...
+echo "DEGUG: ..."
+sleep 1
+echo "DEBUG: Assuming your network connection is established"
+sleep 1
+
+# Enable network time protocol (for the installation timestamps and to avoid any certificate errors)
+echo "DEBUG: Enable network time protocol (for the installation timestamps and to avoid any certificate errors)"
+sleep 1
 timedatectl set-ntp true
- 
+sleep 1
+
 # Check network time protocol status
-#timedatectl status
- 
+echo "DEBUG: Check network time protocol status"
+sleep 1
+timedatectl status
+sleep 1
+
+####################################################################################################
+
 ### DISK & PARTITION MANAGEMENT ###
- 
-# Clear / Create GPT partition table
-sfdisk --delete /dev/sda
-echo 'label: gpt' | sfdisk /dev/sda
- 
+echo "DEBUG: DISK & PARTITION MANAGEMENT"
+
+# Show all block devices
+echo "DEBUG: Show all block devices"
+sleep 1
+blkid
+sleep 1
+
+# Count of all found block devices/partitions
+echo "DEBUG: Count of all found block devices/partitions"
+sleep 1
+blkid | awk -F ":" '{print $1}' | wc --lines
+sleep 1
+
+# Determination of primary drive (use hda, sda, vda or nvme0n1)
+echo "DEBUG: Determination of primary drive (use hda, sda, vda or nvme0n1) (tbd)"
+sleep 1
+
+# Select a drive from block devices
+echo "DEBUG: Select a drive from block devices"
+read -p "Enter drive in lower case letters:" DRIVE
+
+# Show current partition table of selected drive
+echo "DEBUG: Show current partition table of selected drive: $DRIVE"
+sleep 1
+
+# Clear GPT partition table
+echo "DEBUG: Clear GPT partition table"
+sleep 1
+sfdisk --delete /dev/$DRIVE
+
+# Create GPT partition table
+echo "DEBUG: Create GPT partition table"
+sleep 1
+echo 'label: gpt' | sfdisk /dev/$DRIVE
+
 # Create partitions from script (non-interactice)
 # Source: https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/
 # Source: https://www.thegeekstuff.com/2017/05/sfdisk-examples/
 # Source: https://linuxhint.com/sfdisk-tutorials/
-sfdisk /dev/sda <<EOF
+echo "DEBUG: Create partitions from script (non-interactice)"
+sleep 1
+echo "DEBUG: Partition 1: 512MiB EFI System Partition (ESP)"
+sleep 1
+echo "DEBUG: Partition 1: 2GiB Swap Partition"
+sleep 1
+echo "DEBUG: Partition 1: Remaining space Linux Partition"
+sleep 1
+echo "DEBUG: Writing changes..."
+sleep 1
+sfdisk /dev/$DRIVE <<EOF
  , 512M, U
  , 2G,   S
  , , L
 write;
 EOF
- 
-# Create FAT32 ESP filesystem on /dev/sda1
+sleep 1
+
+# Create FAT32 filesystem on first partition
 # Source: https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
-mkfs.fat -F 32 /dev/sda1
- 
-# Create swap filesystem
-mkswap /dev/sda2
- 
-# Create Linux EXT4 filesystem
-mkfs.ext4 /dev/sda3
- 
-# Mount EXT4 filesystem under archiso (/mnt)
-mount /dev/sda3 /mnt
- 
-# Create boot directory under mounted EXT4 partition (/mnt/boot)
-mkdir /mnt/boot
- 
+echo "DEBUG: Create FAT filesystem (FAT size 32) on first partition"
+sleep 1
+mkfs.fat -F 32 /dev/$DRIVE1 -n ARCH -v
+sleep 1
+
+# Create swap filesystem on second partition
+echo "DEBUG: Create swap filesystem on second partition"
+sleep 1
+mkswap /dev/$DRIVE2 --label LINUXSWAP --verbose
+sleep 1
+
+# Create Linux EXT4 filesystem on third partitiond
+echo "DEBUG: Create Linux EXT4 filesystem on third partition"
+sleep 1
+mkfs.ext4 /dev/$DRIVE3 -L ARCHLINUX -v
+sleep 1
+
+# Mount EXT4 filesystem under directory mnt
+echo "DEBUG: Mount EXT4 filesystem under directory mnt"
+sleep 1
+mount /dev/$DRIVE3 /mnt --verbose
+sleep 1
+
+# Create boot directory under mounted EXT4 partition
+echo "DEBUG: Create boot directory under mounted EXT4 partition"
+sleep 1
+mkdir /mnt/boot --verbose
+sleep 1
+
 # Mount ESP under under mounted EXT4 partition (/mnt/boot)
-mount /dev/sda1 /mnt/boot
- 
+echo "DEBUG: Mount ESP under under mounted EXT4 partition"
+sleep 1
+mount /dev/$DRIVE1 /mnt/boot --verbose
+sleep 1
+
+################################################################################
+
 ### PACKAGE INSTALLATION ###
- 
+echo "DEBUG: PACKAGE INSTALLATION"
+sleep 1
+
 # Generate Arch Linux repository mirror list (/etc/pacman.d/mirrorlist)
+echo "DEBUG: Generate Arch Linux repository mirror list (/etc/pacman.d/mirrorlist)"
+sleep 1
 reflector --country DE --fastest 5 --ipv4 --protocol https --save /etc/pacman.d/mirrorlist
- 
-# Install bare minimum packages (base, kernel, editors) on mounted EXT4 partition
-# For the bootloader, chose between grub (legacy, EFI) or refind (EFI only)
-# Other alternative bootloader possible
-# base              = Minimal package set to define a basic Arch Linux installation
-# base-devel        = 
-# linux             = The Linux kernel and modules
-# linux-headers     = Headers and scripts for building modules for the Linux kernel
-# linux-firmware    = Firmware files for Linux
-# sudo              = Give certain users the ability to run some commands as root
-# vi                = The original ex/vi text editor
-# vim               = Vi Improved, a highly configurable, improved version of the vi text editor
-# nano              = Pico editor clone with enhancements
-# micro             = Modern and intuitive terminal-based text editor
-# git               = the fast distributed version control system
-# go                = Core compiler tools for the Go programming language
-# refind            = An EFI boot manager
-# grub              = GNU GRand Unified Bootloader
-# networkmanager    = Network connection manager and user applications
-# bash-completion   = Programmable completion for the bash shell
-# openssh           = Premier connectivity tool for remote login with the SSH protocol
-# blueberry         = Bluetooth configuration tool
-# bluez             = Daemons for the bluetooth protocol stack
-# bluez-plugins     = bluez plugins (PS3 Sixaxis controller)
-# bluez-tools       = A set of tools to manage Bluetooth devices for Linux
-# reflector         = A Python 3 module and script to retrieve and filter the latest Pacman mirror list
- 
-pacstrap /mnt base base-devel linux linux-headers linux-firmware sudo vi vim nano micro git go refind grub networkmanager bash-completion openssh blueberry bluez bluez-plugins bluez-tools reflector
- 
-# Generate filesystem table of /mnt on mounted EXT4 partition (/etc/fstab)
+sleep 1
+echo "DEBUG: Check mirrorlist"
+sleep 1
+cat /etc/pacman.d/mirrorlist
+sleep 3
+
+# Update packages on live media
+echo "DEBUG: Update packages on live media"
+sleep 1
+pacman -Syyu --noconfirm
+sleep 1
+
+# Install bare minimum packages via pacstrap on mounted partitions
+echo "DEBUG: Install bare minimum packages via pacstrap on mounted partitions"
+sleep 1
+pacstrap /mnt base linux linux-firmware
+sleep 1
+
+# Install additional packages (development, editors, bootloader, network service)
+echo "DEBUG: Install additional packages (development, editors, bootloader, network service, SSH server)"
+sleep 1
+pacstrap /mnt base-devel linux-headers vi vim nano git networkmanager bash-completion openssh refind
+sleep 1
+
+# Generate filesystem table of /mnt on mounted EXT4 partition
 # Prefered source identifiers: UUID
+echo "DEBUG: Generate filesystem table of /mnt on mounted EXT4 partition"
+sleep 1
+echo "DEBUG: Prefered source identifiers: UUID"
+sleep 1
+genfstab -t UUID /mnt
+sleep 3
+echo "DEBUG: Writing to /etc/fstab in mounted partition"
+sleep 1
 genfstab -t UUID /mnt >> /mnt/etc/fstab
- 
-# Change the apparent root directory for the current running process and their children to mounted EXT4 partition (/mnt)
-# Source https://wiki.archlinux.org/title/Chroot
-#arch-chroot /mnt
+sleep 1
+echo "DEBUG: Check fstab"
+sleep 1
+cat /etc/fstab
+sleep 3
+
+################################################################################
+
+### SYSTEM CONFIGURATION ###
+echo "DEBUG: SYSTEM CONFIGURATION"
 
 # Enable network time protocol (for the installed system)
+echo "DEBUG: Enable network time protocol (for the installed system)"
+sleep 1
 arch-chroot /mnt timedatectl set-ntp true
+sleep 1
 
 # Enable local real time clock (for the installed system)
+echo "DEBUG: Enable local real time clock (for the installed system)"
+sleep 1
 arch-chroot /mnt timedatectl set-local-rtc 1
+sleep 1
 
-# Variables in chroot
+# Check NTP status
+echo "DEBUG: Check NTP status"
+sleep 1
+arch-chroot /mnt timedatectl status
+sleep 3
+
+# Set variables
+echo "DEBUG: Set variables"
+sleep 1
+
 REGION="Europe"
+echo "DEBUG: REGION = $REGION"
+sleep 1
+
 CITY="Berlin"
+echo "DEBUG: CITY = $CITY"
+sleep 1
+
 LOCALISATION="de_DE.UTF-8 UTF-8"
+echo "DEBUG: LOCALISATION = $LOCALISATION"
+sleep 1
+
 HOSTNAME_CUSTOM="ARCHLINUXVM"
+echo "DEBUG: HOSTNAME_CUSTOM = $HOSTNAME_CUSTOM"
+sleep 1
+
 NEW_USER_NAME="archuser"
+echo "DEBUG: NEW_USER_NAME = $NEW_USER_NAME"
+sleep 1
+
 ARCH_ISO_LABEL=$(blkid /dev/sr0 | awk --field-separator '"' '{print $6}')
+echo "DEBUG: ARCH_ISO_LABEL = $ARCH_ISO_LABEL"
+sleep 1
+
 UUID=$(blkid /dev/sda3 | awk --field-separator '"' '{print $2}')
- 
-### CONFIGURATION ###
- 
+echo "DEBUG: UUID = $UUID"
+sleep 2
+
 # Set region and time zone
-# Set a symbolic link (/etc/localtime points on /usr/share/zoneinfo/Region/City)
-ln --symbolic --force /mnt/usr/share/zoneinfo/$REGION/$CITY /mnt/etc/localtime
- 
+echo "DEBUG: Set region and time zone"
+sleep 1
+ln /mnt/usr/share/zoneinfo/$REGION/$CITY /mnt/etc/localtime --symbolic --force --verbose
+sleep 1
+ls /mnt/etc/localtime -l
+
 # Set the time clocks utility
-# Apply RTC time from system time (--systohc, -w)
-# Source: hwclock --help
-arch-chroot /mnt hwclock --systohc
- 
-# Modify localistation templates file
+echo "DEBUG: Set the time clocks utility"
+sleep 1
+arch-chroot /mnt hwclock --systohc --update-drift --verbose
+sleep 1
+
 # Set the locale and charset
-# In this case:
+echo "DEBUG: Set the locale and charset"
+sleep 1
 echo $LOCALISATION >> /mnt/etc/locale.gen
- 
+cat /mnt/etc/locale.gen
+sleep 1
+
 # Generate localisation files from templates
+echo "DEBUG: Generate localisation files from templates"
+sleep 1
 arch-chroot /mnt locale-gen
- 
+sleep 1
+
 # Set sysetm-wide language and region parameters
-# Source: https://wiki.archlinux.de/title/Locale.conf#Die_LC_ALL_Variable
+echo "DEBUG: Set sysetm-wide language and region parameters"
+sleep 1
 touch /mnt/etc/locale.conf
+echo "# /etc/locale.conf - system-wide language and region configuration" >> /mnt/etc/locale.conf
 echo "LANG=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LANGUAGE=de_DE" >> /mnt/etc/locale.conf
-echo "#LC_COLLATE=C" >> /mnt/etc/locale.conf
-echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_CTYPE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_COLLATE=C" >> /mnt/etc/locale.conf
+echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_MESSAGES=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_PAPER=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_NAME=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_ADDRESS=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_TELEPHONE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
 echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo "LC_ALL=" >> /mnt/etc/locale.conf
- 
-# Modify the configuration file for the virtual console
+echo "#LC_ALL=" >> /mnt/etc/locale.conf
+cat /mnt/etc/locale.conf
+sleep 3
+
+# Set the configuration file for the virtual console
+echo "DEBUG: Set the configuration file for the virtual console"
+sleep 1
 touch /mnt/etc/vconsole.conf
+echo "# /etc/vconsole.conf - key mapping and console font" >> /mnt/etc/vconsole.conf
 echo "KEYMAP=de-latin1" >> /mnt/etc/vconsole.conf
-echo "KEYMAP_TOGGLE=" >> /mnt/etc/vconsole.conf
+echo "KEYMAP_TOGGLE=en_US" >> /mnt/etc/vconsole.conf
 echo "FONT=eurlatgr" >> /mnt/etc/vconsole.conf
 echo "FONT_MAP=" >> /mnt/etc/vconsole.conf
 echo "FONT_UNIMAP=" >> /mnt/etc/vconsole.conf
-echo "#vconsole.keymap=" >> /mnt/etc/vconsole.conf
-echo "#vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
-echo "#vconsole.font=" >> /mnt/etc/vconsole.conf
-echo "#vconsole.font_map=" >> /mnt/etc/vconsole.conf
-echo "#vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
- 
+echo "vconsole.keymap=" >> /mnt/etc/vconsole.conf
+echo "vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
+echo "vconsole.font=" >> /mnt/etc/vconsole.conf
+echo "vconsole.font_map=" >> /mnt/etc/vconsole.conf
+echo "vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
+cat /mnt/etc/vconsole.conf
+sleep 3
+
 # Set a userdefined hostname
-# Or use the hostname of the archlinux live iso ($HOSTNAME => archiso)
+echo "DEBUG: Set a userdefined hostname"
+sleep 1
 touch /mnt/etc/hostname
+sleep 1
 #echo $HOSTNAME >> /etc/hostname
 echo $HOSTNAME_CUSTOM >> /mnt/etc/hostname
- 
-# Modify the hosts file for resolving local domain names
-#echo "# IPv4" >> /mnt/etc/hosts
-#echo "127.0.0.1 localhost" >> /mnt/etc/hosts
-#echo "# IPv6" >> /mnt/etc/hosts
-#echo "::1 localhost" >> /mnt/etc/hosts
-#echo "# Local Domain" >> /mnt/etc/hosts
-#echo "127.0.1.1" $HOSTNAME_CUSTOM".localdomain" $HOSTNAME_CUSTOM >> /mnt/etc/hosts
- 
+cat /mnt/etc/hostname
+sleep 3
+
+####################################################################################################
+
 ### USER MANAGEMENT ###
- 
+echo "DEBUG: USER MANAGEMENT"
+
 # Set a default password for the root user
+echo "DEBUG: Set a default password for the root user"
+sleep 1
+echo "DEBUG: Enter a strong and secure password:"
+echo ""
 arch-chroot /mnt passwd
+sleep 1
 
-# Create some default home folder in useradd skeleton
-arch-chroot /mnt mkdir /etc/skel/Desktop
-arch-chroot /mnt mkdir /etc/skel/Downloads
-arch-chroot /mnt mkdir /etc/skel/Music
-arch-chroot /mnt mkdir /etc/skel/Pictures
-arch-chroot /mnt mkdir /etc/skel/Videos
- 
 # Add a new user
-arch-chroot /mnt useradd --create-home --skel /etc/skel $NEW_USER_NAME
- 
+echo "DEBUG: Add a new user with username: $NEW_USER_NAME"
+sleep 1
+arch-chroot /mnt useradd --create-home $NEW_USER_NAME
+sleep 1
+
 # Set a default password for the new user
+echo "DEBUG: Set a default password for the new user"
+sleep 1
+echo "DEBUG: Enter a strong and secure password:"
+echo ""
 arch-chroot /mnt passwd $NEW_USER_NAME
- 
-# Give superuser previliges to the new user
+sleep 1
+
+# Grant superuser previliges to the new user
+echo "DEBUG: Grant superuser previliges to the new user"
+sleep 1
 arch-chroot /mnt usermod -aG wheel $NEW_USER_NAME
- 
+sleep 1
+
 # Change the visudo configuration (sed, Stream EDitor)
+echo "DEBUG: Change the visudo configuration"
+sleep 1
 sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /mnt/etc/sudoers --in-place
- 
+cat /mnt/etc/sudoers
+sleep 3
+
+####################################################################################################
+
 ### BOOTLOADER ###
- 
-# GRUB
-#grub-install /dev/sda
-#grub-mkconfig --output=/boot/grub/grub.cfg
- 
-# REFIND
+echo "DEBUG: BOOTLOADER"
+
+# Generate rEFInd configuration
+echo "DEBUG: Generate rEFInd configuration"
+sleep 1
 arch-chroot /mnt refind-install
- 
-# Change the generated refind-linux config
+echo "DEBUG: Check rEFInd configuration"
+sleep 1
+cat /mnt/boot/refind_linux.conf
+sleep 3
+
+# Fix the generated rEFInd config
+echo "DEBUG: Fix the generated rEFInd config"
+sleep 1
 sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /mnt/boot/refind-linux.conf --in-place
- 
+echo "DEBUG: Check rEFInd configuration"
+sleep 1
+cat /mnt/boot/refind-linux.conf
+sleep 3
+
+####################################################################################################
+
 ### SERVICES ###
+echo "DEBUG: SERVICES"
+sleep 1
+
+# Enable NetworkManager service
+echo "DEBUG: Enable NetworkManager service"
+sleep 1
 arch-chroot /mnt systemctl enable NetworkManager.service
- 
-# Synchronize
+sleep 1
+ls -l /etc/systemd/system/multi-user.target.wants/NetworkManager.service
+sleep 1
+ls -l /etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service
+sleep 1
+ls -l /etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
+sleep 1
+
+####################################################################################################
+
+### FINALIZE INSTALLATION ###
+echo "DEBUG: FINALIZE INSTALLATION"
+sleep 1
+
+# Synchronize filesystems
+echo "DEBUG: Synchronize filesystems"
+sleep 1
 sync
- 
-# Swap off
+sleep 1
+
+# Swap off swap partition
+echo "DEBUG: Swap off swap partition"
+sleep 1
 swapoff /dev/sda2
- 
-# Unmount ESP
+sleep 1
+
+# Unmount root and boot partition (recursive)
+echo "DEBUG: Unmount root and boot partition (recursive)"
+sleep 1
 umount /dev/sda1
- 
-# Unmount EXT4 Linux filesystem
-umount /dev/sda3
- 
-# Exit arch-chroot
-# exit
+sleep 1
 
-# notify for finish
-echo "You can reboot now"
-
-# Reboot
-#reboot
+echo "Installation is finished! You can reboot now!"
