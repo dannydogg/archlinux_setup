@@ -283,21 +283,37 @@ echo "DEBUG: Set sysetm-wide language and region parameters"
 sleep 1
 touch /mnt/etc/locale.conf
 echo "# /etc/locale.conf - system-wide language and region configuration" >> /mnt/etc/locale.conf
+sleep 1
 echo "LANG=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LANGUAGE=de_DE" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_CTYPE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_COLLATE=C" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_MESSAGES=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_PAPER=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_NAME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_ADDRESS=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_TELEPHONE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /mnt/etc/locale.conf
+sleep 1
 echo "#LC_ALL=" >> /mnt/etc/locale.conf
+sleep 1
 cat /mnt/etc/locale.conf
 sleep 3
 
@@ -306,16 +322,27 @@ echo "DEBUG: Set the configuration file for the virtual console"
 sleep 1
 touch /mnt/etc/vconsole.conf
 echo "# /etc/vconsole.conf - key mapping and console font" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "KEYMAP=de-latin1" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "KEYMAP_TOGGLE=en_US" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "FONT=eurlatgr" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "FONT_MAP=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "FONT_UNIMAP=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "vconsole.keymap=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "vconsole.font=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "vconsole.font_map=" >> /mnt/etc/vconsole.conf
+sleep 1
 echo "vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
+sleep 1
 cat /mnt/etc/vconsole.conf
 sleep 3
 
@@ -403,11 +430,17 @@ echo "DEBUG: Enable NetworkManager service"
 sleep 1
 arch-chroot /mnt systemctl enable NetworkManager.service
 sleep 1
-ls -l /etc/systemd/system/multi-user.target.wants/NetworkManager.service
+ls -l /mnt/etc/systemd/system/multi-user.target.wants/NetworkManager.service
 sleep 1
-ls -l /etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service
+ls -l /mnt/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service
 sleep 1
-ls -l /etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
+ls -l /mnt/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
+sleep 1
+
+# Enable OpenSSH service
+echo "DEBUG: Enable OpenSSH service"
+sleep 1
+arch-chroot /mnt systemctl enable sshd.service
 sleep 1
 
 ####################################################################################################
@@ -425,13 +458,13 @@ sleep 1
 # Swap off swap partition
 echo "DEBUG: Swap off swap partition"
 sleep 1
-swapoff /dev/sda2
+swapoff /dev/"$DRIVE"2
 sleep 1
 
 # Unmount root and boot partition (recursive)
 echo "DEBUG: Unmount root and boot partition (recursive)"
 sleep 1
-umount /dev/sda1
+umount /mnt --recursive --verbose
 sleep 1
 
 echo "Installation is finished! You can reboot now!"
