@@ -79,6 +79,10 @@ read -p "Enter drive in lower case letters:" DRIVE
 echo "DEBUG: Show current partition table of selected drive: $DRIVE"
 sleep 1
 
+# Wipe all signatures from DRIVE
+echo "DEBUG: Wipe all signatures from drive: $DRIVE"
+sudo wipefs --all --force /dev/vdb
+
 # Clear GPT partition table
 echo "DEBUG: Clear GPT partition table"
 sleep 1
@@ -115,19 +119,19 @@ sleep 1
 # Source: https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
 echo "DEBUG: Create FAT filesystem (FAT size 32) on first partition"
 sleep 1
-mkfs.fat -F 32 /dev/"$DRIVE"1 -n ARCH -v
+mkfs.fat -F 32 /dev/"$DRIVE"1 -n ARCH -I -v
 sleep 1
 
 # Create swap filesystem on second partition
 echo "DEBUG: Create swap filesystem on second partition"
 sleep 1
-mkswap /dev/"$DRIVE"2 --label LINUXSWAP --verbose
+mkswap /dev/"$DRIVE"2 --label LINUXSWAP --force --verbose
 sleep 1
 
 # Create Linux EXT4 filesystem on third partitiond
 echo "DEBUG: Create Linux EXT4 filesystem on third partition"
 sleep 1
-mkfs.ext4 /dev/"$DRIVE"3 -L ARCHLINUX -v
+mkfs.ext4 /dev/"$DRIVE"3 -L ARCHLINUX -F -v
 sleep 1
 
 # Swap-on swap partition
