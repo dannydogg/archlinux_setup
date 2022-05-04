@@ -113,25 +113,25 @@ sleep 1
 # Source: https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
 echo "DEBUG: Create FAT filesystem (FAT size 32) on first partition"
 sleep 1
-mkfs.fat -F 32 /dev/$DRIVE1 -n ARCH -v
+mkfs.fat -F 32 /dev/"$DRIVE"1 -n ARCH -v
 sleep 1
 
 # Create swap filesystem on second partition
 echo "DEBUG: Create swap filesystem on second partition"
 sleep 1
-mkswap /dev/$DRIVE2 --label LINUXSWAP --verbose
+mkswap /dev/"$DRIVE"2 --label LINUXSWAP --verbose
 sleep 1
 
 # Create Linux EXT4 filesystem on third partitiond
 echo "DEBUG: Create Linux EXT4 filesystem on third partition"
 sleep 1
-mkfs.ext4 /dev/$DRIVE3 -L ARCHLINUX -v
+mkfs.ext4 /dev/"$DRIVE"3 -L ARCHLINUX -v
 sleep 1
 
 # Mount EXT4 filesystem under directory mnt
 echo "DEBUG: Mount EXT4 filesystem under directory mnt"
 sleep 1
-mount /dev/$DRIVE3 /mnt --verbose
+mount /dev/"$DRIVE"3 /mnt --verbose
 sleep 1
 
 # Create boot directory under mounted EXT4 partition
@@ -143,7 +143,7 @@ sleep 1
 # Mount ESP under under mounted EXT4 partition (/mnt/boot)
 echo "DEBUG: Mount ESP under under mounted EXT4 partition"
 sleep 1
-mount /dev/$DRIVE1 /mnt/boot --verbose
+mount /dev/"$DRIVE"1 /mnt/boot --verbose
 sleep 1
 
 ################################################################################
