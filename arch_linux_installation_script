@@ -2,23 +2,30 @@
 # Arch Linux Installation Script
 
 # Welcome to the Arch Linux Installation Script
+echo ""
 echo "Welcome to the Arch Linux Installation Script!"
-sleep 1
+echo ""
+echo ""
+sleep 2
 
 ####################################################################################################
 
 # OPTIONAL
 # Set keyboard layout to German Latin with umlauts
 echo "DEBUG: Set keyboard layout to German Latin with umlauts"
+echo ""
 sleep 1
 loadkeys de-latin1
 sleep 1
+clear
 
 ####################################################################################################
 
 ### NETWORK ###
 echo "DEBUG: NETWORK"
-sleep 1
+echo ""
+echo ""
+sleep 2
 
 # OPTIONAL
 # Search for network devices (handled by kernel)
@@ -29,82 +36,122 @@ sleep 1
 
 ## Network connectivity check (tbd)
 echo "DEBUG: Network connectivity check (tbd)"
+echo ""
 sleep 1
-# ...
 echo "DEBUG: Ping google.com"
+echo ""
 sleep 1
 ping google.com -c 3
+echo ""
 sleep 1
 echo "DEBUG: Assuming your network connection is established"
-sleep 1
+echo ""
+sleep 2
 
 # Enable network time protocol (for the installation timestamps and to avoid any certificate errors)
 echo "DEBUG: Enable network time protocol (for the installation timestamps and to avoid any certificate errors)"
+echo ""
 sleep 1
 timedatectl set-ntp true
-sleep 1
+echo ""
+sleep 2
 
 # Check network time protocol status
 echo "DEBUG: Check network time protocol status"
+echo ""
 sleep 1
 timedatectl status
-sleep 1
+echo ""
+sleep 2
+clear
 
 ####################################################################################################
 
 ### DISK & PARTITION MANAGEMENT ###
 echo "DEBUG: DISK & PARTITION MANAGEMENT"
+echo ""
+echo ""
+sleep 2
 
 # Show all block devices
 echo "DEBUG: Show all block devices"
+echo ""
 sleep 1
 blkid
+echo ""
 sleep 1
+lsblk --fs
+echo ""
+sleep 2
 
 # Count of all found block devices/partitions
 echo "DEBUG: Count of all found block devices/partitions"
+echo ""
 sleep 1
-blkid | awk -F ":" '{print $1}' | wc --lines
-sleep 1
+echo "Number of found block devices/partitions: $(blkid | awk -F ":" '{print $1}' | wc --lines)"
+echo ""
+sleep 2
 
 # Determination of primary drive (use hda, sda, vda or nvme0n1)
 echo "DEBUG: Determination of primary drive (use hda, sda, vda or nvme0n1) (tbd)"
-sleep 1
+echo ""
+sleep 2
 
 # Select a drive from block devices
 echo "DEBUG: Select a drive from block devices"
+echo ""
+sleep 1
 read -p "Enter drive in lower case letters:" DRIVE
+echo ""
+sleep 2
 
 # Show current partition table of selected drive
 echo "DEBUG: Show current partition table of selected drive: $DRIVE"
-sleep 1
+echo ""
+sleep 2
 
 # Wipe all signatures from DRIVE
 echo "DEBUG: Wipe all signatures from drive: $DRIVE"
+echo ""
+sleep 1
 sudo wipefs --all --force /dev/vdb
+echo ""
+sleep 2
+clear
 
 # Clear GPT partition table
 echo "DEBUG: Clear GPT partition table"
+echo ""
 sleep 1
 sfdisk --delete /dev/$DRIVE
+echo ""
+sleep 2
 
 # Create GPT partition table
 echo "DEBUG: Create GPT partition table"
+echo ""
 sleep 1
-echo 'label: gpt' | sfdisk /dev/$DRIVE
+echo 'label: gpt' | sfdisk /dev/$DRIVE --force
+echo ""
+sleep 2
+clear
 
 # Create partitions from script (non-interactice)
 # Source: https://suntong.github.io/blogs/2015/12/25/use-sfdisk-to-partition-disks/
 # Source: https://www.thegeekstuff.com/2017/05/sfdisk-examples/
 # Source: https://linuxhint.com/sfdisk-tutorials/
 echo "DEBUG: Create partitions from script (non-interactice)"
+echo ""
 sleep 1
 echo "DEBUG: Partition 1: 512MiB EFI System Partition (ESP)"
+echo ""
 sleep 1
 echo "DEBUG: Partition 1: 2GiB Swap Partition"
+echo ""
 sleep 1
 echo "DEBUG: Partition 1: Remaining space Linux Partition"
-sleep 1
+echo ""
+sleep 2
 echo "DEBUG: Writing changes..."
 sleep 1
 sfdisk /dev/$DRIVE <<EOF
@@ -113,369 +160,568 @@ sfdisk /dev/$DRIVE <<EOF
  , , L
 write;
 EOF
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Create FAT32 filesystem on first partition
 # Source: https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
 echo "DEBUG: Create FAT filesystem (FAT size 32) on first partition"
+echo ""
 sleep 1
 mkfs.fat -F 32 /dev/"$DRIVE"1 -n ARCH -I -v
-sleep 1
+echo ""
+sleep 2
 
 # Create swap filesystem on second partition
 echo "DEBUG: Create swap filesystem on second partition"
+echo ""
 sleep 1
 mkswap /dev/"$DRIVE"2 --label LINUXSWAP --force --verbose
-sleep 1
+echo ""
+sleep 2
 
 # Create Linux EXT4 filesystem on third partitiond
 echo "DEBUG: Create Linux EXT4 filesystem on third partition"
+echo ""
 sleep 1
 mkfs.ext4 /dev/"$DRIVE"3 -L ARCHLINUX -F -v
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Swap-on swap partition
 echo "DEBUG: Swap-on swap partition"
+echo ""
 sleep 1
 swapon /dev/"$DRIVE"2 --verbose
+echo ""
+sleep 2
 
 # Mount EXT4 filesystem under directory mnt
 echo "DEBUG: Mount EXT4 filesystem under directory mnt"
+echo ""
 sleep 1
 mount /dev/"$DRIVE"3 /mnt --verbose
-sleep 1
+echo ""
+sleep 2
 
 # Create boot directory under mounted EXT4 partition
 echo "DEBUG: Create boot directory under mounted EXT4 partition"
+echo ""
 sleep 1
 mkdir /mnt/boot --verbose
-sleep 1
+echo ""
+sleep 2
 
 # Mount ESP under under mounted EXT4 partition (/mnt/boot)
 echo "DEBUG: Mount ESP under under mounted EXT4 partition"
+echo ""
 sleep 1
 mount /dev/"$DRIVE"1 /mnt/boot --verbose
-sleep 1
+echo ""
+sleep 2
+clear
 
 ################################################################################
 
 ### PACKAGE INSTALLATION ###
 echo "DEBUG: PACKAGE INSTALLATION"
-sleep 1
+echo ""
+echo ""
+sleep 2
 
 # Generate Arch Linux repository mirror list (/etc/pacman.d/mirrorlist)
 echo "DEBUG: Generate Arch Linux repository mirror list (/etc/pacman.d/mirrorlist)"
+echo ""
 sleep 1
 reflector --country DE --fastest 5 --ipv4 --protocol https --save /etc/pacman.d/mirrorlist
+echo ""
 sleep 1
 echo "DEBUG: Check mirrorlist"
+echo ""
 sleep 1
 cat /etc/pacman.d/mirrorlist
-sleep 3
+echo ""
+sleep 2
+clear
 
 # Update packages on live media
 echo "DEBUG: Update packages on live media"
+echo ""
 sleep 1
 pacman -Syyu --noconfirm
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Install bare minimum packages via pacstrap on mounted partitions
 echo "DEBUG: Install bare minimum packages via pacstrap on mounted partitions"
+echo ""
 sleep 1
 pacstrap /mnt base linux linux-firmware
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Install additional packages (development, editors, bootloader, network service)
 echo "DEBUG: Install additional packages (development, editors, bootloader, network service, SSH server)"
+echo ""
 sleep 1
 pacstrap /mnt base-devel linux-headers vi vim nano git networkmanager bash-completion openssh refind
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Generate filesystem table of /mnt on mounted EXT4 partition
 # Prefered source identifiers: UUID
 echo "DEBUG: Generate filesystem table of /mnt on mounted EXT4 partition"
+echo ""
 sleep 1
 echo "DEBUG: Prefered source identifiers: UUID"
+echo ""
 sleep 1
 genfstab -t UUID /mnt
+echo ""
 sleep 3
 echo "DEBUG: Writing to /etc/fstab in mounted partition"
+echo ""
 sleep 1
 genfstab -t UUID /mnt >> /mnt/etc/fstab
+echo ""
 sleep 1
 echo "DEBUG: Check fstab"
+echo ""
 sleep 1
 cat /etc/fstab
+echo ""
 sleep 3
+clear
 
 ################################################################################
 
 ### SYSTEM CONFIGURATION ###
 echo "DEBUG: SYSTEM CONFIGURATION"
+echo ""
+echo ""
+sleep 2
 
 # Enable network time protocol (for the installed system)
 echo "DEBUG: Enable network time protocol (for the installed system)"
+echo ""
 sleep 1
 arch-chroot /mnt timedatectl set-ntp true
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Enable local real time clock (for the installed system)
 echo "DEBUG: Enable local real time clock (for the installed system)"
+echo ""
 sleep 1
 arch-chroot /mnt timedatectl set-local-rtc 1
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Check NTP status
 echo "DEBUG: Check NTP status"
+echo ""
 sleep 1
 arch-chroot /mnt timedatectl status
-sleep 3
+echo ""
+sleep 2
+clear
 
 # Set variables
 echo "DEBUG: Set variables"
+echo ""
 sleep 1
 
 REGION="Europe"
 echo "DEBUG: REGION = $REGION"
+echo ""
 sleep 1
 
 CITY="Berlin"
 echo "DEBUG: CITY = $CITY"
+echo ""
 sleep 1
 
 LOCALISATION="de_DE.UTF-8 UTF-8"
 echo "DEBUG: LOCALISATION = $LOCALISATION"
+echo ""
 sleep 1
 
 HOSTNAME_CUSTOM="ARCHLINUXVM"
 echo "DEBUG: HOSTNAME_CUSTOM = $HOSTNAME_CUSTOM"
+echo ""
 sleep 1
 
 NEW_USER_NAME="archuser"
 echo "DEBUG: NEW_USER_NAME = $NEW_USER_NAME"
+echo ""
 sleep 1
 
 ARCH_ISO_LABEL=$(blkid /dev/sr0 | awk --field-separator '"' '{print $6}')
 echo "DEBUG: ARCH_ISO_LABEL = $ARCH_ISO_LABEL"
+echo ""
 sleep 1
 
-UUID=$(blkid /dev/"$DRIVE"3 | awk --field-separator '"' '{print $2}')
+UUID=$(blkid /dev/"$DRIVE"3 | awk --field-separator '"' '{print $4}')
 echo "DEBUG: UUID = $UUID"
+echo ""
 sleep 2
+clear
 
 # Set region and time zone
 echo "DEBUG: Set region and time zone"
+echo ""
 sleep 1
 ln /mnt/usr/share/zoneinfo/$REGION/$CITY /mnt/etc/localtime --symbolic --force --verbose
+echo ""
 sleep 1
 ls /mnt/etc/localtime -l
+echo ""
+sleep 2
+clear
 
 # Set the time clocks utility
 echo "DEBUG: Set the time clocks utility"
+echo ""
 sleep 1
 arch-chroot /mnt hwclock --systohc --update-drift --verbose
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Set the locale and charset
 echo "DEBUG: Set the locale and charset"
+echo ""
 sleep 1
 echo $LOCALISATION >> /mnt/etc/locale.gen
-cat /mnt/etc/locale.gen
+echo ""
 sleep 1
+cat /mnt/etc/locale.gen
+echo ""
+sleep 2
+clear
 
 # Generate localisation files from templates
 echo "DEBUG: Generate localisation files from templates"
+echo ""
 sleep 1
 arch-chroot /mnt locale-gen
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Set sysetm-wide language and region parameters
 echo "DEBUG: Set sysetm-wide language and region parameters"
+echo ""
 sleep 1
 touch /mnt/etc/locale.conf
+echo ""
+sleep 1
 echo "# /etc/locale.conf - system-wide language and region configuration" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LANG=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LANGUAGE=de_DE" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_CTYPE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_COLLATE=C" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_MESSAGES=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_PAPER=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_NAME=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_ADDRESS=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_TELEPHONE=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 echo "#LC_ALL=" >> /mnt/etc/locale.conf
+echo ""
 sleep 1
 cat /mnt/etc/locale.conf
+echo ""
 sleep 3
+clear
 
 # Set the configuration file for the virtual console
 echo "DEBUG: Set the configuration file for the virtual console"
+echo ""
 sleep 1
 touch /mnt/etc/vconsole.conf
+echo ""
+sleep 1
 echo "# /etc/vconsole.conf - key mapping and console font" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "KEYMAP=de-latin1" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "KEYMAP_TOGGLE=en_US" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "FONT=eurlatgr" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "FONT_MAP=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "FONT_UNIMAP=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "vconsole.keymap=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "vconsole.font=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "vconsole.font_map=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 echo "vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
+echo ""
 sleep 1
 cat /mnt/etc/vconsole.conf
+echo ""
 sleep 3
+clear
 
 # Set a userdefined hostname
 echo "DEBUG: Set a userdefined hostname"
+echo ""
 sleep 1
 touch /mnt/etc/hostname
+echo ""
 sleep 1
 #echo $HOSTNAME >> /etc/hostname
 echo $HOSTNAME_CUSTOM >> /mnt/etc/hostname
+echo ""
+sleep 1
 cat /mnt/etc/hostname
+echo ""
 sleep 3
+clear
 
 ####################################################################################################
 
 ### USER MANAGEMENT ###
 echo "DEBUG: USER MANAGEMENT"
+echo ""
+echo ""
+sleep 2
 
 # Set a default password for the root user
 echo "DEBUG: Set a default password for the root user"
+echo ""
 sleep 1
 echo "DEBUG: Enter a strong and secure password:"
 echo ""
-arch-chroot /mnt passwd
 sleep 1
+arch-chroot /mnt passwd
+echo ""
+sleep 2
+clear
 
 # Add a new user
 echo "DEBUG: Add a new user with username: $NEW_USER_NAME"
+echo ""
 sleep 1
 arch-chroot /mnt useradd --create-home $NEW_USER_NAME
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Set a default password for the new user
 echo "DEBUG: Set a default password for the new user"
+echo ""
 sleep 1
 echo "DEBUG: Enter a strong and secure password:"
 echo ""
-arch-chroot /mnt passwd $NEW_USER_NAME
 sleep 1
+arch-chroot /mnt passwd $NEW_USER_NAME
+echo ""
+sleep 2
+clear
 
 # Grant superuser previliges to the new user
-echo "DEBUG: Grant superuser previliges to the new user"
+echo "DEBUG: Grant superuser previliges to the new user $NEW_USER_NAME"
+echo ""
 sleep 1
-arch-chroot /mnt usermod -aG wheel $NEW_USER_NAME
+echo "DEBUG: Adding new user $NEW_USER_NAME to standard groups"
+echo ""
 sleep 1
+arch-chroot /mnt usermod -aG network,wheel,audio,kvm,optical,storage,video,"$NEW_USER_NAME",docker,libvirt,sambashare,davfs2 $NEW_USER_NAME
+echo ""
+sleep 1
+echo "DEBUG: User $NEW_USER_NAME is now member of following groups: $(groups $NEW_USER_NAME)
+echo ""
+sleep 2
+clear
 
 # Change the visudo configuration (sed, Stream EDitor)
-echo "DEBUG: Change the visudo configuration"
+echo "DEBUG: Change the visudo configuration with stream editor"
+echo "DEBUG: Usually done via visudo command"
+echo ""
 sleep 1
 sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /mnt/etc/sudoers --in-place
+echo ""
+sleep 1
 cat /mnt/etc/sudoers
+echo ""
 sleep 3
+clear
 
 ####################################################################################################
 
-### BOOTLOADER ###
-echo "DEBUG: BOOTLOADER"
+### BOOTLOADER INSTALLATION ###
+echo "DEBUG: BOOTLOADER INSTALLATION"
+echo ""
+echo ""
+sleep 2
 
 # Generate rEFInd configuration
 echo "DEBUG: Generate rEFInd configuration"
+echo ""
 sleep 1
 arch-chroot /mnt refind-install
+echo ""
+sleep 1
 echo "DEBUG: Check rEFInd configuration"
+echo ""
 sleep 1
 cat /mnt/boot/refind_linux.conf
+echo ""
+echo ""
 sleep 3
+#clear
 
 # Fix the generated rEFInd config
 echo "DEBUG: Fix the generated rEFInd config"
+echo ""
 sleep 1
 sed "s+archisobasedir=arch archisolabel=$ARCH_ISO_LABEL+root=UUID=$UUID rw+g" /mnt/boot/refind_linux.conf --in-place
+echo ""
+sleep 1
 echo "DEBUG: Check rEFInd configuration"
+echo ""
 sleep 1
 cat /mnt/boot/refind_linux.conf
+echo ""
 sleep 3
+clear
 
 ####################################################################################################
 
 ### SERVICES ###
 echo "DEBUG: SERVICES"
-sleep 1
+echo ""
+echo ""
+sleep 2
 
 # Enable NetworkManager service
 echo "DEBUG: Enable NetworkManager service"
+echo ""
 sleep 1
 arch-chroot /mnt systemctl enable NetworkManager.service
+echo ""
 sleep 1
 ls -l /mnt/etc/systemd/system/multi-user.target.wants/NetworkManager.service
+echo ""
 sleep 1
 ls -l /mnt/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service
+echo ""
 sleep 1
 ls -l /mnt/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
-sleep 1
+echo ""
+sleep 2
+clear
 
 # Enable OpenSSH service
 echo "DEBUG: Enable OpenSSH service"
+echo ""
 sleep 1
 arch-chroot /mnt systemctl enable sshd.service
+echo ""
 sleep 1
+/etc/systemd/system/multi-user.target.wants/sshd.service
+echo ""
+sleep 2
+clear
 
 ####################################################################################################
 
 ### FINALIZE INSTALLATION ###
 echo "DEBUG: FINALIZE INSTALLATION"
-sleep 1
+echo ""
+echo ""
+sleep 2
 
-# Synchronize filesystems
-echo "DEBUG: Synchronize filesystems"
+# Sync filesystems
+echo "DEBUG: Sync filesystems"
+echo ""
 sleep 1
 sync
+echo ""
 sleep 1
+echo "DEBUG: Sync of filesystems done"
+echo ""
+sleep 2
 
 # Swap off swap partition
 echo "DEBUG: Swap off swap partition"
+echo ""
 sleep 1
 swapoff /dev/"$DRIVE"2
-sleep 1
+echo ""
+sleep 2
 
 # Unmount root and boot partition (recursive)
 echo "DEBUG: Unmount root and boot partition (recursive)"
+echo ""
 sleep 1
 umount /mnt --recursive --verbose
-sleep 1
+echo ""
+sleep 2
+clear
 
+####################################################################################################
+
+echo ""
 echo "Installation is finished! You can reboot now!"
+echo ""
+sleep 3
