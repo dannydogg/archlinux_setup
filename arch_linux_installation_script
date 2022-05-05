@@ -532,22 +532,22 @@ sleep 1
 echo "DEBUG: Adding new groups"
 echo ""
 sleep 1
-groupadd docker
+arch-chroot /mnt groupadd docker
 echo ""
 sleep 1
-groupadd libvirt
+arch-chroot /mnt groupadd libvirt
 echo ""
 sleep 1
-groupadd sambashare
+arch-chroot /mnt groupadd sambashare
 echo ""
 sleep 1
-groupadd davfs2
+arch-chroot /mnt groupadd davfs2
 echo ""
 sleep 1
 echo "DEBUG: Adding new user $NEW_USER_NAME to standard groups"
 echo ""
 sleep 1
-arch-chroot /mnt usermod -aG network,wheel,audio,kvm,optical,storage,video,"$NEW_USER_NAME",docker,libvirt,sambashare,davfs2 $NEW_USER_NAME
+arch-chroot /mnt usermod --append --groups network,wheel,audio,kvm,optical,storage,video,"$NEW_USER_NAME",docker,libvirt,sambashare,davfs2 $NEW_USER_NAME
 echo ""
 sleep 1
 echo "DEBUG: User $NEW_USER_NAME is now member of following groups: $(groups $NEW_USER_NAME)"
@@ -560,7 +560,7 @@ echo "DEBUG: Change the visudo configuration with stream editor"
 echo "DEBUG: Usually done via visudo command"
 echo ""
 sleep 1
-sed 's+# %wheel ALL=(ALL) ALL+%wheel ALL=(ALL) ALL+g' /mnt/etc/sudoers --in-place
+sed 's+# %wheel ALL=(ALL:ALL) ALL+%wheel ALL=(ALL:ALL) ALL+g' /mnt/etc/sudoers --in-place
 echo ""
 sleep 1
 cat /mnt/etc/sudoers
