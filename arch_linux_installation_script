@@ -2,6 +2,7 @@
 # Arch Linux Installation Script
 
 # Welcome to the Arch Linux Installation Script
+clear
 echo ""
 echo "Welcome to the Arch Linux Installation Script!"
 echo ""
@@ -114,7 +115,7 @@ sleep 2
 echo "DEBUG: Wipe all signatures from drive: $DRIVE"
 echo ""
 sleep 1
-sudo wipefs --all --force /dev/vdb
+sudo wipefs --all --force /dev/$DRIVE
 echo ""
 sleep 2
 clear
