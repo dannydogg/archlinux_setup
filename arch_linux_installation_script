@@ -422,53 +422,21 @@ echo "DEBUG: Set sysetm-wide language and region parameters"
 echo ""
 sleep 1
 touch /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "# /etc/locale.conf - system-wide language and region configuration" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LANG=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LANGUAGE=de_DE" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_CTYPE=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_NUMERIC=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_TIME=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_COLLATE=C" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_MONETARY=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_MESSAGES=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_PAPER=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_NAME=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_ADDRESS=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_TELEPHONE=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_MEASUREMENT=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "LC_IDENTIFICATION=de_DE.UTF-8" >> /mnt/etc/locale.conf
-echo ""
-sleep 1
 echo "#LC_ALL=" >> /mnt/etc/locale.conf
 echo ""
 sleep 1
@@ -482,38 +450,16 @@ echo "DEBUG: Set the configuration file for the virtual console"
 echo ""
 sleep 1
 touch /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "# /etc/vconsole.conf - key mapping and console font" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "KEYMAP=de-latin1" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "KEYMAP_TOGGLE=en_US" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "FONT=eurlatgr" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "FONT_MAP=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "FONT_UNIMAP=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "vconsole.keymap=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "vconsole.keymap_toggle=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "vconsole.font=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "vconsole.font_map=" >> /mnt/etc/vconsole.conf
-echo ""
-sleep 1
 echo "vconsole.font_unimap=" >> /mnt/etc/vconsole.conf
 echo ""
 sleep 1
@@ -583,13 +529,28 @@ clear
 echo "DEBUG: Grant superuser previliges to the new user $NEW_USER_NAME"
 echo ""
 sleep 1
+echo "DEBUG: Adding new groups"
+echo ""
+sleep 1
+groupadd docker
+echo ""
+sleep 1
+groupadd libvirt
+echo ""
+sleep 1
+groupadd sambashare
+echo ""
+sleep 1
+groupadd davfs2
+echo ""
+sleep 1
 echo "DEBUG: Adding new user $NEW_USER_NAME to standard groups"
 echo ""
 sleep 1
 arch-chroot /mnt usermod -aG network,wheel,audio,kvm,optical,storage,video,"$NEW_USER_NAME",docker,libvirt,sambashare,davfs2 $NEW_USER_NAME
 echo ""
 sleep 1
-echo "DEBUG: User $NEW_USER_NAME is now member of following groups: $(groups $NEW_USER_NAME)
+echo "DEBUG: User $NEW_USER_NAME is now member of following groups: $(groups $NEW_USER_NAME)"
 echo ""
 sleep 2
 clear
