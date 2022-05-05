@@ -354,15 +354,15 @@ echo "DEBUG: LOCALISATION = $LOCALISATION"
 echo ""
 sleep 1
 
-HOSTNAME_CUSTOM="ARCHLINUXVM"
-echo "DEBUG: HOSTNAME_CUSTOM = $HOSTNAME_CUSTOM"
-echo ""
-sleep 1
+#HOSTNAME_CUSTOM="ARCHLINUXVM"
+#echo "DEBUG: HOSTNAME_CUSTOM = $HOSTNAME_CUSTOM"
+#echo ""
+#sleep 1
 
-NEW_USER_NAME="archuser"
-echo "DEBUG: NEW_USER_NAME = $NEW_USER_NAME"
-echo ""
-sleep 1
+#NEW_USER_NAME="archuser"
+#echo "DEBUG: NEW_USER_NAME = $NEW_USER_NAME"
+#echo ""
+#sleep 1
 
 ARCH_ISO_LABEL=$(blkid /dev/sr0 | awk --field-separator '"' '{print $6}')
 echo "DEBUG: ARCH_ISO_LABEL = $ARCH_ISO_LABEL"
@@ -472,6 +472,9 @@ clear
 echo "DEBUG: Set a userdefined hostname"
 echo ""
 sleep 1
+read -p "Enter userdefined hostname in UPPER case letters:" HOSTNAME_CUSTOM
+echo ""
+sleep 1
 touch /mnt/etc/hostname
 echo ""
 sleep 1
@@ -508,7 +511,16 @@ clear
 echo "DEBUG: Add a new user with username: $NEW_USER_NAME"
 echo ""
 sleep 1
+read -p "Enter user name in lower case letters:" NEW_USER_NAME
+echo ""
+sleep 1
 arch-chroot /mnt useradd --create-home $NEW_USER_NAME
+echo ""
+sleep 1
+echo "DEBUG: Home directory of $NEW_USER_NAME"
+echo ""
+sleep 1
+ls -l /mnt/home
 echo ""
 sleep 2
 clear
